@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-BIT 神明指路</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+            font-family: monospace;
+            color: white;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .pixel-border {
+            border: 4px solid;
+            image-rendering: pixelated;
+        }
+
+        .pixel-button {
+            border: none;
+            position: relative;
+            box-shadow: 
+                inset 2px 2px 0px rgba(255,255,255,0.3),
+                inset -2px -2px 0px rgba(0,0,0,0.3),
+                2px 2px 0px rgba(0,0,0,0.5);
+            cursor: pointer;
+            font-family: monospace;
+        }
+
+        .pixel-button:hover {
+            box-shadow: 
+                inset 2px 2px 0px rgba(255,255,255,0.5),
+                inset -2px -2px 0px rgba(0,0,0,0.5),
+                1px 1px 0px rgba(0,0,0,0.7);
+            transform: translate(1px, 1px);
+        }
+
+        .pixel-shake {
+            animation: pixelShake 0.1s infinite;
+        }
+
+        @keyframes pixelShake {
+            0% { transform: translate(0px, 0px); }
+            25% { transform: translate(-2px, 0px); }
+            50% { transform: translate(2px, -2px); }
+            75% { transform: translate(-2px, 2px); }
+            100% { transform: translate(2px, 0px); }
+        }
+
+        .pixel-bounce {
+            animation: pixelBounce 0.5s infinite;
+        }
+
+        @keyframes pixelBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .pixel-glow {
+            animation: pixelGlow 1.5s infinite alternate !important;
+            box-shadow: 0 0 5px #fbbf24 !important;
+        }
+
+        @keyframes pixelGlow {
+            0% { 
+                box-shadow: 0 0 5px #fbbf24, 0 0 10px #fbbf24, 0 0 15px #fbbf24 !important;
+                background: #92400e !important;
+                transform: scale(1);
+            }
+            100% { 
+                box-shadow: 0 0 15px #fbbf24, 0 0 25px #fbbf24, 0 0 35px #f59e0b, 0 0 45px #f59e0b !important;
+                background: #d97706 !important;
+                transform: scale(1.05);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 8-BIT Header Styling */
+        .bit-header {
+            background: #fbbf24;
+            border: 4px solid #d97706;
+            text-align: center;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .bit-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            font-family: monospace;
+            text-shadow: 2px 2px 0px #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .bit-subtitle {
+            color: #374151;
+            font-size: 0.875rem;
+            font-family: monospace;
+        }
+
+        /* Category Selection Styling */
+        .category-container {
+            background: #1e293b;
+            padding: 1.5rem;
+            border: 4px solid #fbbf24;
+        }
+
+        .category-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #fbbf24;
+            font-family: monospace;
+        }
+
+        .category-subtitle {
+            color: #fde047;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            font-family: monospace;
+        }
+
+        .category-button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-button {
+            width: 100%;
+            padding: 1rem;
+            text-align: left;
+            font-family: monospace;
+            transition: all 0.3s ease;
+        }
+
+        .category-button.selected {
+            background: #eab308;
+            color: #1f2937;
+        }
+
+        .category-button.unselected {
+            background: #374151;
+            color: #fde047;
+        }
+
+        .category-button.unselected:hover {
+            background: #4b5563;
+        }
+
+        .category-label {
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+
+        .category-desc {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+
+        .start-button {
+            width: 100%;
+            background: #eab308;
+            color: #1f2937;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            font-family: monospace;
+        }
+
+        .start-button.disabled {
+            background: #4b5563;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .start-button.enabled {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Shake Container - 8-BIT Style */
+        .shake-info {
+            text-align: center;
+        }
+
+        .shake-info-title {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: #fbbf24;
+        }
+
+        .shake-info-content {
+            color: #fde047;
+            font-size: 0.75rem;
+        }
+
+        .stick-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+
+        .stick-box {
+            width: 8rem;
+            height: 8rem;
+            background: #fbbf24;
+            border: 4px solid #d97706;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            overflow: visible;
+        }
+
+        .stick-box:hover:not(.shaking) {
+            transform: scale(1.05);
+        }
+
+        .stick-box-lid {
+            width: 100%;
+            height: 1.5rem;
+            background: #eab308;
+            border-bottom: 4px solid #ca8a04;
+        }
+
+        .stick-box-content {
+            padding: 0.5rem 0.2rem;
+            text-align: center;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stick-box-title {
+            color: #1f2937;
+            font-weight: bold;
+            font-size: 0.7rem;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .stick {
+            width: 0.4rem;
+            background: #92400e;
+            margin: 0 0.1rem;
+            display: inline-block;
+            vertical-align: bottom;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .stick:nth-child(1) { height: 2.5rem; }
+        .stick:nth-child(2) { height: 3.2rem; }
+        .stick:nth-child(3) { height: 2.8rem; }
+        .stick:nth-child(4) { height: 3.5rem; }
+        .stick:nth-child(5) { height: 2.2rem; }
+        .stick:nth-child(6) { height: 3.0rem; }
+
+        .dropped-stick {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 1rem;
+            width: 5rem;
+            height: 1.5rem;
+            background: #fde68a;
+            border: 2px solid #f59e0b;
+            color: #92400e;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shake-status {
+            background: #1e293b;
+            padding: 0.5rem;
+            border: 2px solid #fbbf24;
+            text-align: center;
+        }
+
+        .shake-status-text {
+            color: #fbbf24;
+            font-size: 0.875rem;
+        }
+
+        /* Divination (筊杯) Styling */
+        .divination-container {
+            text-align: center;
+        }
+
+        .divination-header {
+            background: #1e293b;
+            padding: 1rem;
+            border: 2px solid #fbbf24;
+            margin-bottom: 1.5rem;
+        }
+
+        .divination-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #fbbf24;
+        }
+
+        .divination-subtitle {
+            color: #fde047;
+            font-size: 0.875rem;
+        }
+
+        .cookies-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cookie {
+            width: 4rem;
+            height: 4rem;
+            background: #d97706;
+            border: 3px solid #92400e;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .cookie:hover {
+            transform: scale(1.1);
+        }
+
+        .cookie-dot {
+            position: absolute;
+            background: #92400e;
+            border-radius: 50%;
+        }
+
+        .cookie-dot-1 {
+            top: 0.5rem;
+            left: 0.75rem;
+            width: 0.5rem;
+            height: 0.5rem;
+        }
+
+        .cookie-dot-2 {
+            top: 1rem;
+            right: 0.75rem;
+            width: 0.25rem;
+            height: 0.25rem;
+        }
+
+        .cookie-dot-3 {
+            bottom: 0.75rem;
+            left: 1rem;
+            width: 0.25rem;
+            height: 0.25rem;
+        }
+
+        .cookie-dot-4 {
+            bottom: 0.5rem;
+            right: 1rem;
+            width: 0.5rem;
+            height: 0.5rem;
+        }
+
+        .cookie-dot-5 {
+            top: 1.5rem;
+            left: 1.5rem;
+            width: 0.25rem;
+            height: 0.25rem;
+        }
+
+        .cookie-edge {
+            position: absolute;
+            inset: 0.25rem;
+            border-radius: 50%;
+            border: 2px solid #f59e0b;
+            opacity: 0.5;
+        }
+
+        .cookie-label {
+            font-size: 0.75rem;
+            color: #fbbf24;
+            margin-top: 0.25rem;
+        }
+
+        .cookie-bite {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: #1e293b;
+            border-radius: 50%;
+        }
+
+        .cookie-bite-inner {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            width: 1rem;
+            height: 1rem;
+            background: #0f172a;
+            border-radius: 50%;
+        }
+
+        .throw-button {
+            background: #eab308;
+            color: #1f2937;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            font-family: monospace;
+        }
+
+        /* Result Display */
+        .result-header {
+            background: #1e293b;
+            padding: 1rem;
+            border: 2px solid #fbbf24;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-button {
+            background: #4b5563;
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            font-family: monospace;
+        }
+
+        .result-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .result-message {
+            background: #1e293b;
+            padding: 1rem;
+            border: 2px solid #ef4444;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-message-text {
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #f87171;
+            margin-bottom: 1rem;
+        }
+
+        .retry-button {
+            background: #dc2626;
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            font-size: 1.125rem;
+            font-family: monospace;
+        }
+
+        .loading-text {
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        /* Fortune Result */
+        .fortune-container {
+            background: #1e293b;
+            padding: 1.5rem;
+            border: 4px solid #fbbf24;
+            text-align: center;
+        }
+
+        .fortune-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #fbbf24;
+            font-family: monospace;
+        }
+
+        .fortune-content {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #111827;
+            border: 2px solid #64748b;
+        }
+
+        .fortune-text {
+            color: #fde047;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .play-again-button {
+            background: #eab308;
+            color: #1f2937;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            font-family: monospace;
+        }
+
+        .container {
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .main-content {
+            max-width: 28rem;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-content">
+            
+            <!-- 8-BIT Header -->
+            <div class="bit-header pixel-border">
+                <h1 class="bit-title">◤ 8-BIT 神明指路 ◥</h1>
+                <p class="bit-subtitle">PRESS START TO DIVINE</p>
+            </div>
+
+            <!-- Step 1: Category Selection -->
+            <div id="step-input">
+                <div class="category-container pixel-border">
+                    <h2 class="category-title">▶ SELECT CATEGORY</h2>
+                    <p class="category-subtitle">選擇你想問的類別</p>
+                    
+                    <div class="category-button-container">
+                        <button class="category-button unselected pixel-button" onclick="selectCategory('work')">
+                            <div class="category-label">💼 工作事業</div>
+                            <div class="category-desc">WORK & CAREER</div>
+                        </button>
+                        <button class="category-button unselected pixel-button" onclick="selectCategory('love')">
+                            <div class="category-label">💕 愛情感情</div>
+                            <div class="category-desc">LOVE & RELATIONSHIP</div>
+                        </button>
+                        <button class="category-button unselected pixel-button" onclick="selectCategory('life')">
+                            <div class="category-label">🍀 生活運勢</div>
+                            <div class="category-desc">LIFE & FORTUNE</div>
+                        </button>
+                    </div>
+                    
+                    <button id="start-button" class="start-button disabled pixel-button" onclick="startDivination()" disabled>
+                        ▶ PLEASE SELECT CATEGORY ◀
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Shake -->
+            <div id="step-shake" class="hidden">
+                <div class="result-header pixel-border">
+                    <button class="back-button pixel-button" onclick="resetGame()">
+                        ◀ BACK
+                    </button>
+                    <div class="shake-info">
+                        <p class="shake-info-title">SELECTED:</p>
+                        <p class="shake-info-content" id="selected-category"></p>
+                    </div>
+                    <div style="width: 3rem;"></div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div class="stick-container">
+                        <div class="stick-box pixel-button" id="stick-box" onclick="startShaking()">
+                            <div class="stick-box-lid"></div>
+                            <div class="stick-box-content">
+                                <div class="stick-box-title">STICK BOX</div>
+                                <div id="sticks-display">
+                                    <div class="stick"></div>
+                                    <div class="stick"></div>
+                                    <div class="stick"></div>
+                                    <div class="stick"></div>
+                                    <div class="stick"></div>
+                                    <div class="stick"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="dropped-stick" class="dropped-stick pixel-bounce hidden">
+                            STICK GET!
+                        </div>
+                    </div>
+                    
+                    <div class="shake-status pixel-border">
+                        <p class="shake-status-text" id="shake-status">
+                            ▶ CLICK TO SHAKE ◀
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Divination -->
+            <div id="step-divination" class="hidden">
+                <div class="divination-container">
+                    <div class="result-header pixel-border">
+                        <button class="back-button pixel-button" onclick="goBackToShake()">
+                            ◀ BACK
+                        </button>
+                        <h2 class="result-title">◤ DIVINATION MODE ◥</h2>
+                        <div style="width: 3rem;"></div>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <p style="color: #fde047; font-size: 0.875rem;">神明啊，這支籤是我的嗎？</p>
+                    </div>
+                    
+                    <div class="cookies-container">
+                        <div>
+                            <div class="cookie">
+                                <div class="cookie-dot cookie-dot-1"></div>
+                                <div class="cookie-dot cookie-dot-2"></div>
+                                <div class="cookie-dot cookie-dot-3"></div>
+                                <div class="cookie-dot cookie-dot-4"></div>
+                                <div class="cookie-dot cookie-dot-5"></div>
+                                <div class="cookie-edge"></div>
+                            </div>
+                            <div class="cookie-label">🍪1</div>
+                        </div>
+                        <div>
+                            <div class="cookie">
+                                <div class="cookie-dot cookie-dot-1"></div>
+                                <div class="cookie-dot cookie-dot-2"></div>
+                                <div class="cookie-dot cookie-dot-3"></div>
+                                <div class="cookie-dot cookie-dot-4"></div>
+                                <div class="cookie-dot cookie-dot-5"></div>
+                                <div class="cookie-edge"></div>
+                            </div>
+                            <div class="cookie-label">🍪2</div>
+                        </div>
+                    </div>
+                    
+                    <button class="throw-button pixel-button" onclick="throwCookies()">
+                        ▶ THROW COOKIES ◀
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Waiting -->
+            <div id="step-waiting" class="hidden">
+                <div style="text-align: center;">
+                    <div class="result-header pixel-border">
+                        <button class="back-button pixel-button" onclick="resetGame()">
+                            ◀ BACK
+                        </button>
+                        <h2 class="result-title">◤ RESULT ◥</h2>
+                        <div style="width: 3rem;"></div>
+                    </div>
+                    
+                    <div class="cookies-container">
+                        <div>
+                            <div class="cookie pixel-bounce" id="cookie1">
+                                <!-- Cookie content will be updated by JavaScript -->
+                            </div>
+                            <div class="cookie-label" id="cookie1-label">🍪</div>
+                        </div>
+                        <div>
+                            <div class="cookie pixel-bounce" id="cookie2">
+                                <!-- Cookie content will be updated by JavaScript -->
+                            </div>
+                            <div class="cookie-label" id="cookie2-label">🍪</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-message pixel-border">
+                        <p class="result-message-text" id="result-text"></p>
+                        
+                        <button id="retry-button" class="retry-button pixel-button hidden" onclick="restartShaking()">
+                            ▶ RETRY ◀
+                        </button>
+                        
+                        <p id="loading-text" class="loading-text hidden">LOADING FORTUNE...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Result -->
+            <div id="step-result" class="hidden">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div class="stick-container">
+                        <div class="stick-box pixel-button" style="overflow: visible;">
+                            <div class="stick-box-lid"></div>
+                            <div class="stick-box-content" style="height: auto; position: static; padding: 0.2rem;">
+                                <div class="stick-box-title">LUCKY STICK</div>
+                                <div id="result-sticks-display" style="margin-top: 0.3rem;">
+                                    <div class="stick pixel-glow"></div>
+                                    <div class="stick pixel-glow"></div>
+                                    <div class="stick pixel-glow"></div>
+                                    <div class="stick pixel-glow"></div>
+                                    <div class="stick pixel-glow"></div>
+                                    <div class="stick pixel-glow"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fortune-container pixel-border">
+                    <h2 class="fortune-title" id="fortune-title">◤ 您的籤詩 ◥</h2>
+                    
+                    <div class="fortune-content pixel-border">
+                        <pre class="fortune-text" id="fortune-text"></pre>
+                    </div>
+                    
+                    <button class="play-again-button pixel-button" onclick="resetGame()">
+                        ▶ PLAY AGAIN ◀
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        let currentStep = 'input';
+        let selectedCategory = '';
+        let isShaking = false;
+        let stickDropped = false;
+        let divinationResult = null;
+        let fortuneResult = null;
+
+        // Category labels
+        const categoryLabels = {
+            'work': '💼 工作事業',
+            'love': '💕 愛情感情',
+            'life': '🍀 生活運勢'
+        };
+
+        // Divination meanings
+        const divinationMeanings = {
+            'holy': '聖筊 - 神明說可以！',
+            'laugh': '笑筊 - 神明笑而不答，這籤不是你的',
+            'angry': '陰筊 - 神明說不是你的籤'
+        };
+
+        // 編碼解碼函數
+        function encode(text) {
+            return btoa(unescape(encodeURIComponent(text)));
+        }
+
+        function decode(encoded) {
+            try {
+                return decodeURIComponent(escape(atob(encoded)));
+            } catch (e) {
+                return "解碼失敗";
+            }
+        }
+
+        // 編碼後的籤詩資料庫
+        const encodedFortunes = {
+            'work': [
+                "MS4g5pyD6K2w55qE6YeN6bue77yM6YCa5bi45Zyo6ICB6ZeG6Kqq44CM5LuK5aSp5YWI6YCZ5qij77yM5Ymp5LiLTGluZeWGjeijnOOAjeeahOmCo+S4gOWIu+OAgg==",
+                "Mi4g6ICB6ZeG55Wr55qE5aSn6aSF77yM5piv5L2g5ZSv5LiA6IO95YiG5Yiw55qE5Yqg6Jaq77yM6YKE5piv55SoRXhjZWznlavnmoTpgqPnqK7jgII=",
+                "My4g5omA6KyC55qE5ZyY6ZqK5ZCI5L2c77yM5bCx5piv5Ye65LqL5pmC77yM5L2g5pyA5aW95LiN5piv576k57WE6KOh5pyA5b6M5bey6K6A55qE6YKj5YCL5Lq644CC",
+                "NC4g5q+P5LiA5Lu944CM5oCl5Lu244CN77yM5ris6Kmm55qE5LiN5piv6IO95Yqb77yM6ICM5piv5L2g6IO95LiN6IO95pKQ6YGO5YeM5pmo5aSW6YCB5ZKW5ZWh44CC",
+                "NS4g5L2g55qE6Jaq5rC077yM5Y+q5piv5YWs5Y+456ef5L2g6Z2S5pil55qE5pyI56ef6LK777yM6YKE5LiN5ZCr5Yqg54+t5pmC5pW444CC",
+                "Ni4g6YO15Lu26KOh55qE44CMQ0PjgI0944CMQ3Jvc3MgQ2hlY2vjgI3vvIznorrkv53liLDmmYLmnInkurrog73kuIDotbfog4zpu5HpjYvjgII=",
+                "Ny4g5L2g5LiN5piv6Ieq6aGY5Yqg54+t77yM6ICM5piv5Zyo546p44CM6Kqw5YWI6LWw6Kqw5bCx5piv5oqT6ICZ5a2Q44CN55qE6IG35aC05oGQ5oCW6YGK5oiy44CC",
+                "OC4g6IG35L2N5o+P6L+w5a+r44CM6Kej5rG65ZWP6aGM44CN77yM5YW25a+m5piv5bmr5b+Z5pS25ou+5Li7566h5LiJ5Y+l6Kmx5Lif5LiL5L6G55qE54ib5pSk5a2Q44CC",
+                "OS4g5L2g5bCN5bel5L2c55qE54ax5oOF77yM5Zyo55yL5Yiw6Jaq6LOH5Zau6KKr5YGl5L+d44CB5Yue6YCA5omj5YWJ5pmC77yM5bey57aT5Ya35Y2744CC",
+                "MTAuIOWQjOS6i+iqquOAjOaIkeS+huW5q+S9oOOAje+8jOmAmuW4uOaYr+aMh+OAjOaIkeW5q+S9oOWKoOayue+8jOeEtuW+jOeci+aIsuOAjeOAgg==",
+                "MTEuIOOAjOWwjem9iumhhueykuW6puOAjeOAjOaJk+mAoOitt+Wfjuays+OAjT0g5oqK5LiA5Lu257Ch5Zau55qE5LqL77yM6Kyb5Yiw6YCj6ZW35a6Y6Ieq5bex6YO96Zyn54We54We44CC",
+                "MTIuIOW5tOW6pue4vuaViOiAg+aguO+8jOS4jeaYr+iAg+e4vu+8jOaYr+S9nOaWh+avlOizve+8jOeci+iqsOiDveaKilBQVOWQueWIsOWDj+W5tOWgseOAgg==",
+                "MTMuIOaPkOmbouiBt+aZgu+8jOS4u+euoeeahOmXnOW/g+eoi+W6pu+8jOacg+eerOmWk+WIt+aWsOS9oOWFpeiBt+S7peS+hueahOacgOmrmOe0gOmMhOOAgg==",
+                "MTQuIOS9oOS4jeaYr+WFrOWPuOeahOieuue1sumHmO+8jOWboOeCuuieuue1suWjnuS6huacg+iiq+aPm++8jOS9oOWPquacg+iiq+e9teWIsOaHt+eWkeS6uueUn+OAgg==",
+                "MTUuIOWFrOWPuOeahOOAjOWutuW6reaWh+WMluOAjT0g5ZOh5bel6KaB5YOP5a625Lq65LiA5qij5LuY5Ye677yM5L2G5YiG57SF5pmC5rKS5L2g5Lu944CC",
+                "MTYuIOa6luaZguS4i+ePreeahOe9quaDoeaEn++8jOaYr+aFo+iAgemXhuacgOaIkOWKn+eahOeyvuelnuaOp+WItuihk+OAgg==",
+                "MTcuIOaJgOisgueahOW3peS9nOeUn+a0u+W5s+ihoe+8jOWwseaYr+S9oOS4i+ePreW+jOmChOiDveaJm+iRl+ethumbu+WcqOW6iuS4iuWbnlRlYW1z44CC",
+                "MTguIOaWsOWwiOahiOWJm+aOpeaJi+eahOS9oO+8muOAjOWlveWDj+igu+aciei2o+eahO+8geOAjSDihpIg5YWp6YCx5b6M55qE5L2g77ya44CM5bm55Zib5LiN5pS+6aKx6aKo5YGH77yf44CN",
+                "MTkuIOS9oOS7peeCuuS9oOWcqOS4iuePre+8jOWFtuWvpuaYr+OAjOePreWcqOS4iuS9oOOAje+8jOiAjOS4lOmChOaykue1puWKoOePreiyu+OAgg==",
+                "MjAuIOS9oOeahOS6uueUn+e4vuaViOihqOePvu+8jOavlOWPsOeBo+mBuOaJi+WPg+WKoOWlp+mBi+mChOaykuS6uumXnOazqO+8jOS9huWjk+WKm+WNu+S4gOaoo+Wkp+OAgg=="
+            ],
+            'love': [
+                "MS4g5LuW5LiN5piv5Lit5aSu56m66Kq/77yM5LuW5piv5YWo6IGv5Ya36JeP5quD77yM6Kqw6Z2g6L+R6Kqw6YO96IO95ra85LiA5rOi77yM5Y+q5pyJ5L2g5pyD5YeN5Yiw55m85oqW44CC",
+                "Mi4g5LuW6Kqq5LuW5b+Z77yM5bCN77yM5b+Z6JGX5ruRUmVlbHPlm57liKXkurrnmoTpmZDli5XjgII=",
+                "My4g5LuW5LiN5piv6YKE5rKS6ZW35aSn77yM5LuW5piv5pyq5pa35aW255qE5beo5ayw77yM6ICM5L2g5Y+I5LiN5piv5pyI5a2Q5Lit5b+D44CC",
+                "NC4g5LuW5LiN5piv5LiN5oeC5rWq5ryr77yM5LuW5Y+q5piv5oeC5b6X5oqK6Yyi5rWq5ryr5Zyw6Iqx5Zyo5Yil5Lq66Lqr5LiK44CC",
+                "NS4g5LuW55qE5omL5qmf5LiN5piv56eY5a+G5aSa77yM5piv5aSa6ZaLQXBw77yM5aSa5Yiw5L2g5Lul54K65LuW5Zyo57aT54ef5paw5Ym15YWs5Y+444CC",
+                "Ni4g55u45L+h5oiR77yM5bua6aSY5qG26KOh55qE5Ymp6aOv5Ymp6I+c6YO95q+U5LuW5pyJ5YO55YC877yM6Iez5bCR6YKE6IO96aSK6LGs44CC",
+                "Ny4g5L2g5LiN5piv5Zyo6KuH5oiA5oSb77yM5L2g5piv5Zyo5YW85beu5YGaVWJlciBFYXRz44CB5b+D55CG6Kuu5ZWG77yM6YKE5YWN6YGL44CC",
+                "OC4g5LuW6Kqq44CM5oiR6YWN5LiN5LiK5L2g44CN77yM6YCZ5piv5LuW5Lq655Sf5ZSv5LiA6Kyb6YGO55qE5a+m6Kmx77yM5YW25LuW5YWo5pivQlPjgII=",
+                "OS4g5L2g5oSf5YuV5aSp5oSf5YuV5Zyw77yM5bCx5piv5oSf5YuV5LiN5LqG5LuW77yM5Zug54K65LuW5Y+q5bCN6Y+h5a2Q6KOh55qE6Ieq5bex5r+V44CC",
+                "MTAuIOS7lueahOWJjeWls+WPi++8jOS4jeaYr+mBjuWOu+W8j++8jOaYr+e6jOmbhuW4uOmnkOinkuiJsu+8jOavlE5ldGZsaXjpgoTmnIPmm7TmlrDjgII=",
+                "MTEuIOS9oOaDs+i3n+S7lui1sOWIsOacquS+hu+8jOS7luWPquaDs+i3n+S9oOi1sOmAsuaxvei7iuaXhemkqOOAgg==",
+                "MTIuIOS7luS4jeaYr+S4jeWbnuioiuaBr++8jOS7luaYr+WbnuS6huWPpuS4gOWAi+WmueWtkOeahOOAjOato+WcqOi8uOWFpeS4reKLr+OAjeOAgg==",
+                "MTMuIOWIpeWGjeW5q+S7luaJvuiXieWPo+S6hu+8jOS7lueahOiXieWPo+avlGlQaG9uZeWFhembu+e3mumChOWuueaYk+aWt+OAgg==",
+                "MTQuIOS9oOWcqOioiOeVq+S9oOWAkeeahOacquS+hu+8jOS7luWcqOioiOeVq+S4i+asoeaAjum6vOiuk+S9oOiyt+WWruOAgg==",
+                "MTUuIOS7luS4jeaYr+aFoueGse+8jOS7luaYr+WwjeS9oOW/g+WmguatouawtO+8jOmChOe1kOWGsOOAgg==",
+                "MTYuIOS4gOauteaEn+aDhemcgOimgeS9oOaIquWclue1pumWqOicnOe+pOWvqeWIpO+8jOWug+aXqeWwseipsuatu+WIkeWumuiunuS6huOAgg==",
+                "MTcuIOS7luS4jeaYr+acieiLpuiht++8jOS7luWwseaYr+WAi+a4o++8jOa4o+WIsOWPr+S7peWOu+eVtueUmOiUl+axgeS7o+iogOS6uuOAgg==",
+                "MTguIOS7lueahOmBk+atie+8jOavlOOAjOaIkeW3sumWseiugOS4puWQjOaEj+S7peS4iuaineasvuOAjemChOaykuacieiqoOaEj+OAgg==",
+                "MTkuIOS9oOS4jeaYr+S7lueahOmBv+miqOa4r++8jOS9oOaYr+S7lueahOS8keaBr+erme+8jOWKoOa7v+ayueOAgeS4iuWujOW7geaJgOWwsemWg+S6uuOAgg==",
+                "MjAuIOiomOS9j++8jOeLl+aUueS4jeS6huWQg+Wxju+8jOS9huiHs+WwkeeLl+mChOacg+aQluWwvuW3tO+8jOS7lumAo+WwvuW3tOmDveaHtuW+l+OAgg=="
+            ],
+            'life': [
+                "MS4g6IiH5YW26KKr5Yil5Lq66YC855iL77yM5LiN5aaC5Li75YuV55m855iL77yM6Iez5bCR6YKE6IO96Ieq5bex5rG65a6a6KaB55m85Zyo5ZOq5YCL576k57WE44CC",
+                "Mi4g5Lul5YmN55qE5oiR77ya5piv5LiN5piv5oiR5LiN5aSg5aW977yfIOePvuWcqOeahOaIke+8muaYr+WcqOWTiOWbie+8n+S9oOiFpuiii+ijneixhuiFkOa4o++8nw==",
+                "My4g5Yil6Lef5oiR6Kyb6YGT55CG77yM5oiR5LuK5aSp5Y+q5bi25oOF57eS5L6G77yM6YKE5piv5YWN5rSX5p2v6KOd55qE6YKj56iu44CC",
+                "NC4g57K+56We56mp5a6aID0g56mp5a6a5Zyw5ZGI54++44CM5b+r5bSp5r2w5L2G6YKE6IO95Y67Ny0xMeiyt+WGsOe+juW8j+OAjeeahOeLgOaFi+OAgg==",
+                "NS4g6YCZ5LiW55WM5piv6I2J5Y+w54+t5a2Q77yM5L2g5rKS5b+F6KaB5ryU5b6X5YOP5pil5rWq5Li76Iie5Y+w5LiA5qij6KqN55yf44CC",
+                "Ni4g55m855iL5LiN5piv55uu55qE77yM5piv6K6T6IG95LiN5oeC5Lq66Kmx55qE5Lq677yM6Iez5bCR6IG95oeC44CM5bm544CN6YCZ5YCL5ZyL6Zqb6YCa55So6Kqe44CC",
+                "Ny4g44CM5aW955qE5aW955qE5Zev5Zev44CN5piv5oiR5LuK5aSp5pyA5oWI5oKy55qE5Y+w6Kme77yM5q+U6Kqm57aT6YKE5pyJ5pWI44CC",
+                "OC4g5Lul5YmN5oiR5b+N5rCj5ZCe6IGy77yM54++5Zyo5oiR6Zmw6Zm95oCq5rCj77yM5Y+w54Gj6buR54aK6YO96KaB57Wm5oiR6bue6K6a44CC",
+                "OS4g5oiR55qE5oOF57eS5LiN5pivNy0xMeeahOiyqOaetu+8jOaykuaciee+qeWLmeWFqOW5tOeEoeS8keOAgeijnOiyqOWIsOWHjOaZqOOAgg==",
+                "MTAuIOiIh+WFtuWFp+W/g+aIsua8lOaIkOOAiueUhOWsm+WCs+OAi++8jOS4jeWmguebtOaOpeS4iua8lOOAiuWSkuOAi++8jOWah+atu+avlOi8g+W/q+OAgg==",
+                "MTEuIOaIkeeahOWFp+W/g++8jumpmua/pOmnrea1quOAguaIkeeahOihqOaDhe+8jumiqOW5s+a1qumdnOOAguaIkeeahOihjOeCuu+8jumaqOapn+eZvOeYi++8jOWDj+misemiqOWBh+S4gOaoo+iHqOaZguWuo+W4g+OAgg==",
+                "MTIuIOeVtuS9oOaUvuajhOS6huiiq+eQhuino+eahOW/temgre+8jOS9oOacg+eZvOePvuS6uueUn+mghuWIsOavlOmrmOmQtea6lueCueeOh+mChOmrmOOAgg==",
+                "MTMuIOS7peWJjeaIkeaDs+iejeWFpe+8jOePvuWcqOaIkeWPquaDs+iuk+S7luWAkeWFqOmDqOS4i+e3muOAgg==",
+                "MTQuIOWIpei3n+aIkeiqquWKoOayue+8jOebtOaOpeiqqumMouWMr+WIsOWTqu+8jOS/neitieS4jeaYr+ipkOmomeewoeioiuOAgg==",
+                "MTUuIOeiuuiouueCuuOAjOWFrOS4u+eXheacq+acn+OAje+8jOayu+eZguaWueW8j++8muavj+WkqVViZXIgRWF0c+aXqemkkOWIsOW6iumgreOAgg==",
+                "MTYuIOWPquimgeaIkeS4jeism+atpuW+t++8jOaykuS6uuiDveeUqOmBk+W+t+e2geaetuaIke+8jOmAo+WFq+WNpueJiOS5n+euoeS4jeS6huOAgg==",
+                "MTcuIOWIpeS6uueskeaIkeWkqueYi+eZsu+8jOaIkeeskeS7luS6uueci+S4jeepv++8jOWPjeato+iWquawtOWwj+WBt+eVtuW+l+W+iOaEnOaEj+OAgg==",
+                "MTguIOS9oOeahOWFp+iAl++8jOato+WcqOW5q+aFo+iAgemXhuiTi+itt+Wfjuays++8jOavlOWPsOepjembu+mChOepqeWbuuOAgg==",
+                "MTkuIOaIkeS4jeaYr+S4jeism+eQhu+8jOWPquaYr+aHtuW+l+i3n+S9oOism+mCo+WAi+OAjOaykuWxgeeUqOeahOeQhuOAjeOAgg==",
+                "MjAuIOa3seWQuOS4gOWPo+awo++8jOW+nuS4ueeUsOWQvOWHuu+8muOAjOW5su+8geaIke+8geWxge+8geS6i++8geOAjeavlOS7u+S9leeRnOS8veiqsumDveiIkuWjk+OAgg=="
+            ]
+        };
+
+        // Select category
+        function selectCategory(category) {
+            selectedCategory = category;
+            
+            // Update button states
+            document.querySelectorAll('.category-button').forEach(btn => {
+                btn.classList.remove('selected', 'unselected');
+                btn.classList.add('unselected');
+            });
+            
+            // Highlight selected button
+            event.target.classList.remove('unselected');
+            event.target.classList.add('selected');
+            
+            // Enable start button
+            const startButton = document.getElementById('start-button');
+            startButton.textContent = '▶ START DIVINATION ◀';
+            startButton.classList.remove('disabled');
+            startButton.classList.add('enabled');
+            startButton.disabled = false;
+        }
+
+        // Start divination
+        function startDivination() {
+            if (!selectedCategory) {
+                alert('請先選擇問題類型哦！');
+                return;
+            }
+            showStep('shake');
+            document.getElementById('selected-category').textContent = categoryLabels[selectedCategory];
+            // 確保籤條顯示
+            resetSticksDisplay();
+        }
+
+        // Go back to shake page
+        function goBackToShake() {
+            stickDropped = false;
+            divinationResult = null;
+            showStep('shake');
+            document.getElementById('shake-status').textContent = '▶ CLICK TO SHAKE ◀';
+            document.getElementById('dropped-stick').classList.add('hidden');
+            resetSticksDisplay();
+        }
+
+        // Reset sticks display
+        function resetSticksDisplay() {
+            document.getElementById('sticks-display').innerHTML = `
+                <div class="stick"></div>
+                <div class="stick"></div>
+                <div class="stick"></div>
+                <div class="stick"></div>
+                <div class="stick"></div>
+                <div class="stick"></div>
+            `;
+        }
+
+        // Start shaking animation
+        function startShaking() {
+            if (stickDropped) return;
+            
+            isShaking = true;
+            document.getElementById('shake-status').textContent = 'SHAKING...';
+            document.getElementById('stick-box').classList.add('pixel-shake');
+            
+            // Make sticks bounce
+            const sticks = document.querySelectorAll('.stick');
+            sticks.forEach(stick => stick.classList.add('pixel-bounce'));
+            
+            // After 1.5 seconds, stop shaking and drop stick
+            setTimeout(() => {
+                isShaking = false;
+                stickDropped = true;
+                document.getElementById('stick-box').classList.remove('pixel-shake');
+                sticks.forEach(stick => stick.classList.remove('pixel-bounce'));
+                document.getElementById('sticks-display').innerHTML = '';
+                document.getElementById('dropped-stick').classList.remove('hidden');
+                document.getElementById('shake-status').textContent = 'STICK READY! PREPARE DIVINATION...';
+                
+                // After 1 second, go to divination
+                setTimeout(() => {
+                    showStep('divination');
+                }, 1000);
+            }, 1500);
+        }
+
+        // Throw cookies (divination)
+        function throwCookies() {
+            // Random result: holy 33%, laugh 33%, angry 34%
+            const random = Math.random();
+            if (random < 0.33) {
+                divinationResult = 'holy';
+            } else if (random < 0.66) {
+                divinationResult = 'laugh';
+            } else {
+                divinationResult = 'angry';
+            }
+            
+            showStep('waiting');
+            
+            // Update cookie display based on result
+            updateCookieDisplay();
+            
+            // Show result text
+            document.getElementById('result-text').textContent = divinationMeanings[divinationResult];
+            
+            if (divinationResult === 'holy') {
+                // Show loading text
+                document.getElementById('loading-text').classList.remove('hidden');
+                
+                // After 1.5 seconds, show fortune
+                setTimeout(() => {
+                    showFortune();
+                }, 1500);
+            } else {
+                // Show retry button
+                setTimeout(() => {
+                    document.getElementById('retry-button').classList.remove('hidden');
+                }, 1500);
+            }
+        }
+
+        // Update cookie display based on divination result
+        function updateCookieDisplay() {
+            const cookie1 = document.getElementById('cookie1');
+            const cookie2 = document.getElementById('cookie2');
+            const label1 = document.getElementById('cookie1-label');
+            const label2 = document.getElementById('cookie2-label');
+            
+            // Clear existing content
+            cookie1.innerHTML = '';
+            cookie2.innerHTML = '';
+            
+            if (divinationResult === 'holy') {
+                // Holy: one complete, one with bite
+                // Cookie 1 - complete
+                cookie1.innerHTML = `
+                    <div class="cookie-dot cookie-dot-1"></div>
+                    <div class="cookie-dot cookie-dot-2"></div>
+                    <div class="cookie-dot cookie-dot-3"></div>
+                    <div class="cookie-dot cookie-dot-4"></div>
+                    <div class="cookie-dot cookie-dot-5"></div>
+                    <div class="cookie-edge"></div>
+                `;
+                label1.textContent = '🍪完整';
+                
+                // Cookie 2 - with bite
+                cookie2.innerHTML = `
+                    <div class="cookie-bite"></div>
+                    <div class="cookie-bite-inner"></div>
+                    <div class="cookie-dot cookie-dot-1"></div>
+                    <div class="cookie-dot cookie-dot-3"></div>
+                    <div class="cookie-dot" style="bottom: 0.5rem; right: 1.5rem; width: 0.25rem; height: 0.25rem;"></div>
+                `;
+                label2.textContent = '🍪被咬';
+            } else if (divinationResult === 'laugh') {
+                // Laugh: both complete
+                const completeHtml = `
+                    <div class="cookie-dot cookie-dot-1"></div>
+                    <div class="cookie-dot cookie-dot-2"></div>
+                    <div class="cookie-dot cookie-dot-3"></div>
+                    <div class="cookie-dot cookie-dot-4"></div>
+                    <div class="cookie-dot cookie-dot-5"></div>
+                    <div class="cookie-edge"></div>
+                `;
+                cookie1.innerHTML = completeHtml;
+                cookie2.innerHTML = completeHtml;
+                label1.textContent = '🍪完整';
+                label2.textContent = '🍪完整';
+            } else {
+                // Angry: both with bites
+                const bitenHtml = `
+                    <div class="cookie-bite"></div>
+                    <div class="cookie-bite-inner"></div>
+                    <div class="cookie-dot cookie-dot-1"></div>
+                    <div class="cookie-dot cookie-dot-3"></div>
+                    <div class="cookie-dot" style="bottom: 0.5rem; right: 1.5rem; width: 0.25rem; height: 0.25rem;"></div>
+                `;
+                cookie1.innerHTML = bitenHtml;
+                cookie2.innerHTML = bitenHtml;
+                label1.textContent = '🍪被咬';
+                label2.textContent = '🍪被咬';
+            }
+        }
+
+        // Show fortune result
+        function showFortune() {
+            const fortunes = encodedFortunes[selectedCategory];
+            const randomIndex = Math.floor(Math.random() * fortunes.length);
+            const selectedFortune = fortunes[randomIndex];
+            const decodedFortune = decode(selectedFortune);
+            
+            fortuneResult = decodedFortune;
+            document.getElementById('fortune-text').textContent = decodedFortune;
+            showStep('result');
+        }
+
+        // Restart shaking (after failed divination)
+        function restartShaking() {
+            stickDropped = false;
+            divinationResult = null;
+            showStep('shake');
+            document.getElementById('shake-status').textContent = '▶ CLICK TO SHAKE ◀';
+            document.getElementById('dropped-stick').classList.add('hidden');
+            resetSticksDisplay();
+            document.getElementById('retry-button').classList.add('hidden');
+            document.getElementById('loading-text').classList.add('hidden');
+        }
+
+        // Reset entire game
+        function resetGame() {
+            selectedCategory = '';
+            isShaking = false;
+            stickDropped = false;
+            divinationResult = null;
+            fortuneResult = null;
+            
+            // Reset category buttons
+            document.querySelectorAll('.category-button').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.classList.add('unselected');
+            });
+            
+            // Reset start button
+            const startButton = document.getElementById('start-button');
+            startButton.textContent = '▶ PLEASE SELECT CATEGORY ◀';
+            startButton.classList.remove('enabled');
+            startButton.classList.add('disabled');
+            startButton.disabled = true;
+            
+            showStep('input');
+        }
+
+        // Show specific step
+        function showStep(step) {
+            const steps = ['input', 'shake', 'divination', 'waiting', 'result'];
+            steps.forEach(s => {
+                const element = document.getElementById(`step-${s}`);
+                if (element) {
+                    if (s === step) {
+                        element.classList.remove('hidden');
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                }
+            });
+            currentStep = step;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showStep('input');
+        });
+    </script>
+</body>
+</html>
